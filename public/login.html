@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Fasal Sathi</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .auth-container { max-width: 400px; margin: 100px auto; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .auth-container h2 { color: #005F40; margin-bottom: 20px; }
+        .auth-container p { margin-top: 15px; font-size: 0.9rem; }
+    </style>
+</head>
+<body style="background: #f8fafc; display: block;">
+    <div class="auth-container">
+        <h2>Welcome Back</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="text" id="phone" required placeholder="Enter registered phone">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+        <p>New farmer? <a href="signup.html" style="color: #005F40; font-weight: 700;">Create Account</a></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: id('phone').value, password: id('password').value })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userName', data.user.fullName);
+                window.location.href = 'index.html';
+            } else {
+                alert(data.error);
+            }
+        };
+        const id = (i) => document.getElementById(i);
+    </script>
+</body>
+</html>

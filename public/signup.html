@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register | Fasal Sathi</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .auth-container { max-width: 450px; margin: 50px auto; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body style="background: #f8fafc; display: block;">
+    <div class="auth-container">
+        <h2 style="color: #005F40;">Farmer Registration</h2>
+        <form id="signupForm">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="text" id="phone" required>
+            </div>
+            <div class="input-group">
+                <label>Default District</label>
+                <select id="district" class="select-wrapper" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <option value="S.A.S Nagar">Mohali</option>
+                    <option value="Amritsar">Amritsar</option>
+                    <option value="Ludhiana">Ludhiana</option>
+                    <option value="Ferozepur">Ferozepur</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn-primary">Register Account</button>
+        </form>
+        <p style="margin-top: 15px;">Already registered? <a href="login.html" style="color: #005F40; font-weight: 700;">Login here</a></p>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fullName: document.getElementById('fullName').value,
+                    phone: document.getElementById('phone').value,
+                    district: document.getElementById('district').value,
+                    password: document.getElementById('password').value
+                })
+            });
+            if (res.ok) {
+                alert("Registration Successful! Please Login.");
+                window.location.href = 'login.html';
+            } else {
+                const data = await res.json();
+                alert(data.error);
+            }
+        };
+    </script>
+</body>
+</html>

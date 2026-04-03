@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fasal Sathi | Smart Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="logo">Fasal Sathi</div>
+            
+            <nav>
+                <button class="nav-item active" onclick="showTab('dashboard')" data-key="navDash">Dashboard</button>
+                <button class="nav-item" onclick="showTab('market')" data-key="navMarket">Market</button>
+                <button class="nav-item" onclick="showTab('schemes')" data-key="navSchemes">Schemes</button>
+            </nav>
+
+            <div class="lang-picker">
+                <label for="lang-select" data-key="langLabel">Language</label>
+                <div class="select-wrapper">
+                    <select id="lang-select" onchange="changeLanguage(this.value)">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी (Hindi)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h2 data-key="console">Farmer's Console</h2>
+                <div class="user-profile">
+                    <div class="city-picker">
+                        <label data-key="locLabel">Location:</label>
+                        <div class="select-wrapper">
+                            <select id="city-select" onchange="updateCity(this.value)">
+                                <option value="mohali">Mohali, PB</option>
+                                <option value="amritsar">Amritsar, PB</option>
+                                <option value="ludhiana">Ludhiana, PB</option>
+                                <option value="jalandhar">Jalandhar, PB</option>
+                                <option value="bathinda">Bathinda, PB</option>
+                                <option value="ferozepur">Ferozepur, PB</option>
+                                <option value="abohar">Abohar, PB</option>
+                                <option value="patiala">Patiala, PB</option>
+                                <option value="sangrur">Sangrur, PB</option>
+                                <option value="nawanshahr">Nawanshahr, PB</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="auth-btn-container"></div>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <div class="card weather-card" id="weather-box">
+                    <div class="card-header" data-key="weatherHead">Weather Intelligence</div>
+                    <div id="weather-data" data-key="fetching">Fetching...</div>
+                </div>
+
+                <div class="card calc-card">
+                    <h3 data-key="profitHead">Profitability Engine</h3>
+                    <div class="input-group">
+                        <label data-key="yieldL">Yield (kg)</label>
+                        <input type="number" id="yield" placeholder="0">
+                    </div>
+                    <div class="input-group">
+                        <label data-key="priceL">Market Price (₹)</label>
+                        <input type="number" id="price" placeholder="0">
+                    </div>
+                    <div class="input-group">
+                        <label data-key="costL">Input Cost (₹)</label>
+                        <input type="number" id="cost" placeholder="0">
+                    </div>
+                    
+                    <div class="calc-actions">
+                        <div id="result" class="result-display">₹0</div>
+                        <button class="btn-primary" onclick="calculateProfit()" data-key="calcBtn">Analyze Profit</button>
+                    </div>
+                </div>
+
+                <div class="card ai-card">
+                    <h3 data-key="aiHead">Fasal Sathi</h3>
+                    <div class="chat-display" id="ai-chat">
+                        <p><b data-key="aiName">AI:</b> <span data-key="aiWelcome">Hello, I am Fasal Sathi. How can I help you?</span></p>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Ask about soil, pests..." data-placeholder-key="aiPlaceholder">
+                        <button onclick="sendToAI()">➔</button>
+                    </div>
+                </div>
+
+                <div class="card market-card">
+                    <h3 data-key="mandiHead">Live Mandi Rates</h3>
+                    <ul id="price-list" class="price-list">
+                        <li data-key="mandiFetching">Fetching latest rates from Agmarknet...</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>
