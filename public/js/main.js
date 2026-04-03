@@ -401,7 +401,7 @@ function handleLogout() {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userName');
-    renderAuthButton();;
+    renderAuthButton();
 }
 
 window.onload = () => {
