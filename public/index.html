@@ -7,16 +7,26 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="dashboard-wrapper">
+    <div class="mobile-header">
+        <div class="logo">Fasal Sathi</div>
+        <button class="hamburger-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+    <div class="dashboard-wrapper" style="width: 100%;">
         <aside class="sidebar">
             <div class="logo">Fasal Sathi</div>
             
             <nav>
-                <button class="nav-item active" onclick="showTab('dashboard')" data-key="navDash">Dashboard</button>
-                <button class="nav-item" onclick="showTab('market')" data-key="navMarket">Market</button>
-                <button class="nav-item" onclick="showTab('schemes')" data-key="navSchemes">Schemes</button>
+                <button class="nav-item active" onclick="showTab('dashboard')" data-key="navDash" id="nav-dashboard">Dashboard</button>
+                <button class="nav-item" onclick="showTab('market')" data-key="navMarket" id="nav-market">Market</button>
+                <button class="nav-item" onclick="showTab('crop-suggest')" data-key="navCropSuggest" id="nav-crop-suggest">Crop Suggestion</button>
+                <button class="nav-item" onclick="showTab('trends')" data-key="navTrends" id="nav-trends">Market Trends</button>
             </nav>
 
             <div class="lang-picker">
@@ -56,7 +66,8 @@
                 </div>
             </header>
 
-            <div class="bento-grid">
+            <div id="dashboard" class="tab-content active">
+                <div class="bento-grid">
                 <div class="card weather-card" id="weather-box">
                     <div class="card-header" data-key="weatherHead">Weather Intelligence</div>
                     <div id="weather-data" data-key="fetching">Fetching...</div>
@@ -99,6 +110,93 @@
                     <ul id="price-list" class="price-list">
                         <li data-key="mandiFetching">Fetching latest rates from Agmarknet...</li>
                     </ul>
+                </div>
+                </div>
+            </div>
+
+            <!-- Market Tab -->
+            <div id="market" class="tab-content" style="display: none;">
+                <div class="bento-grid">
+                    <div class="card" style="grid-column: span 12;">
+                        <div class="market-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 0;" data-key="marketHead">Farmer's Marketplace</h3>
+                            <button class="btn-primary" style="width: auto; padding: 10px 20px;" onclick="toggleSellForm()" data-key="sellProdBtn">Sell a Product</button>
+                        </div>
+                        
+                        <div id="sell-form-container" style="display: none; margin-bottom: 24px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                            <h3 style="font-size: 1.1rem; margin-bottom: 15px;" data-key="listNewProd">List a New Product</h3>
+                            <form id="sellProductForm" onsubmit="submitProductListing(event)">
+                                <div class="input-group">
+                                    <label data-key="prodNameL">Product Name</label>
+                                    <input type="text" id="prodName" required placeholder="e.g., Organic Wheat" data-placeholder-key="prodNamePl">
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="input-group">
+                                        <label data-key="prodPriceL">Price (₹)</label>
+                                        <input type="number" id="prodPrice" required placeholder="Total or per unit" data-placeholder-key="prodPricePl">
+                                    </div>
+                                    <div class="input-group">
+                                        <label data-key="prodQtyL">Quantity</label>
+                                        <input type="text" id="prodQuantity" required placeholder="e.g., 50 kg" data-placeholder-key="prodQtyPl">
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label data-key="prodDescL">Description</label>
+                                    <input type="text" id="prodDesc" placeholder="Any extra details..." data-placeholder-key="prodDescPl">
+                                </div>
+                                <button type="submit" class="btn-primary" id="listBtn" data-key="listProdBtn">List Product</button>
+                            </form>
+                        </div>
+
+                        <div class="product-grid" id="productGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                            <div style="color: var(--text-muted);" data-key="fetchingProd">Fetching products...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crop Suggestion Tab -->
+            <div id="crop-suggest" class="tab-content" style="display: none;">
+                <div class="bento-grid">
+                    <div class="card ai-card" style="grid-column: span 12;">
+                        <h3 data-key="cropSuggestHead">AI Crop Suggestion</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;" data-key="cropSuggestDesc">Get personalized recommendations from Fasal Sathi AI.</p>
+                        <form id="cropSuggestForm" onsubmit="getCropSuggestion(event)">
+                            <div class="input-group">
+                                <label data-key="soilTypeL">Soil Type</label>
+                                <input type="text" id="soilType" required placeholder="e.g., Alluvial, Black, Red..." data-placeholder-key="soilTypePl">
+                            </div>
+                            <div class="input-group">
+                                <label data-key="seasonL">Season</label>
+                                <input type="text" id="season" required placeholder="e.g., Kharif, Rabi, Zaid..." data-placeholder-key="seasonPl">
+                            </div>
+                            <div class="input-group">
+                                <label data-key="regionL">Region</label>
+                                <input type="text" id="region" required placeholder="e.g., Punjab, Maharashtra..." data-placeholder-key="regionPl">
+                            </div>
+                            <button type="submit" class="btn-primary" id="cropSuggestBtn" data-key="getSuggestBtn">Get Suggestion</button>
+                        </form>
+                        <div id="cropSuggestResult" class="chat-display" style="margin-top: 20px; display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trends Tab -->
+            <div id="trends" class="tab-content" style="display: none;">
+                <div class="bento-grid">
+                    <div class="card" style="grid-column: span 12;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <h3 data-key="trendsHead" style="margin-bottom: 0;">Local Market Trends</h3>
+                            <div class="select-wrapper" style="width: auto; min-width: 200px;">
+                                <select id="trend-crop-select" onchange="updateTrendChart()">
+                                    <option value="" data-key="selectCropMsg">Fetching Crops...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="position: relative; height: 400px; width: 100%;">
+                            <canvas id="priceTrendChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
