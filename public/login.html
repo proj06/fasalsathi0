@@ -28,23 +28,7 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: id('phone').value, password: id('password').value })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userName', data.user.fullName);
-                window.location.href = 'index.html';
-            } else {
-                alert(data.error);
-            }
-        };
-        const id = (i) => document.getElementById(i);
+        document.getElementById("loginForm").onsubmit=async e=>{e.preventDefault();const t=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:id("phone").value,password:id("password").value})}),o=await t.json();t.ok?(localStorage.setItem("token",o.token),o.refreshToken&&localStorage.setItem("refreshToken",o.refreshToken),localStorage.setItem("userName",o.user.fullName),localStorage.setItem("userDistrict",o.user.district),window.location.href="index.html"):alert(o.error||"Login failed")};const id=e=>document.getElementById(e);
     </script>
 </body>
 </html>
