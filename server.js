@@ -8,7 +8,6 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// Fail fast if JWT secret is missing
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
     console.error("FATAL: JWT_SECRET is not set in .env");
@@ -21,21 +20,27 @@ mongoose.connect(process.env.MONGO_URI)
 
 const userSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
-    phone:    { type: String, required: true, unique: true },
+    phone: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     district: { type: String, default: 'Mohali' }
 });
 const User = mongoose.model('User', userSchema);
 
-const schemeSchema = new mongoose.Schema({
-    name: String, description: String, lang: String
+const productSchema = new mongoose.Schema({
+    name: String,
+    price: Number,
+    quantity: String,
+    sellerName: String,
+    phone: String,
+    description: String,
+    district: String,
+    createdAt: { type: Date, default: Date.now }
 });
-const Scheme = mongoose.model('Scheme', schemeSchema);
+const Product = mongoose.model('Product', productSchema);
 
-// ── Auth Middleware ────────────────────────────────────────────
 function authMiddleware(req, res, next) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({ error: "Access denied. Please log in." });
@@ -53,7 +58,6 @@ function authMiddleware(req, res, next) {
     }
 }
 
-// ── Signup ─────────────────────────────────────────────────────
 app.post('/api/auth/signup', async (req, res) => {
     try {
         const { fullName, phone, password, district } = req.body;
@@ -62,13 +66,12 @@ app.post('/api/auth/signup', async (req, res) => {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Explicit duplicate check for a clear error message
         const existing = await User.findOne({ phone });
         if (existing) {
             return res.status(409).json({ error: "Phone number already registered." });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 12); // 12 rounds is safer
+        const hashedPassword = await bcrypt.hash(password, 12);
         const newUser = new User({ fullName, phone, password: hashedPassword, district });
         await newUser.save();
 
@@ -79,7 +82,6 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 });
 
-// ── Login ──────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { phone, password } = req.body;
@@ -95,7 +97,6 @@ app.post('/api/auth/login', async (req, res) => {
 
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
 
-        // Refresh token for long sessions
         const refreshToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '30d' });
 
         res.json({
@@ -109,7 +110,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// ── Token Refresh ──────────────────────────────────────────────
 app.post('/api/auth/refresh', (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(401).json({ error: "No refresh token provided." });
@@ -123,7 +123,6 @@ app.post('/api/auth/refresh', (req, res) => {
     }
 });
 
-// ── Protected: Get logged-in user profile ─────────────────────
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -134,13 +133,49 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     }
 });
 
-// ── Schemes (public) ──────────────────────────────────────────
-app.get('/api/schemes/:lang', async (req, res) => {
+app.put('/api/auth/district', authMiddleware, async (req, res) => {
     try {
-        const schemes = await Scheme.find({ lang: req.params.lang });
-        res.json(schemes);
+        const { district } = req.body;
+        if (!district) return res.status(400).json({ error: "District is required." });
+        await User.findByIdAndUpdate(req.user.id, { district });
+        res.json({ message: "District updated successfully." });
     } catch (err) {
-        res.status(500).json({ error: "Could not fetch schemes." });
+        res.status(500).json({ error: "Could not update district." });
+    }
+});
+
+app.get('/api/marketplace', async (req, res) => {
+    try {
+        const query = req.query.district ? { district: req.query.district } : {};
+        const products = await Product.find(query).sort({ createdAt: -1 });
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ error: "Could not fetch products." });
+    }
+});
+
+app.post('/api/marketplace', authMiddleware, async (req, res) => {
+    try {
+        const { name, price, quantity, description } = req.body;
+        if (!name || !price || !quantity) {
+            return res.status(400).json({ error: "Name, price, and quantity are required." });
+        }
+
+        const user = await User.findById(req.user.id);
+        const newProduct = new Product({
+            name,
+            price,
+            quantity,
+            description,
+            sellerName: user.fullName,
+            phone: user.phone,
+            district: user.district
+        });
+
+        await newProduct.save();
+        res.status(201).json({ message: "Product listed successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to list product." });
     }
 });
 
@@ -149,7 +184,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 
 app.post('/api/ai-chat', async (req, res) => {
     const { message, lang } = req.body;
-    
+
     if (!process.env.GEMINI_KEY) {
         return res.status(500).json({ response: "Error: GEMINI_KEY is missing in .env" });
     }
@@ -157,10 +192,10 @@ app.post('/api/ai-chat', async (req, res) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const prompt = `You are Fasal Sathi, an expert in Indian agriculture. Only answer requests related to agriculture and derivatives. Do not indulge in personal talks if user prompts. If user asks about the website, tell them its related to agriculture and helping farmers according to your own words. Do not use any text styles. Answer in plain text with proper spacing. Answer the following question briefly in ${lang}: ${message}`;
-        
+
         const result = await model.generateContent(prompt);
-        const responseText = result.response.text(); 
-        
+        const responseText = result.response.text();
+
         res.json({ response: responseText });
     } catch (err) {
         console.error("Gemini Error:", err);
@@ -168,7 +203,24 @@ app.post('/api/ai-chat', async (req, res) => {
     }
 });
 
-// ── Mandi Rates (public) ──────────────────────────────────────
+app.post('/api/crop-suggest', async (req, res) => {
+    const { soilType, season, region, lang } = req.body;
+
+    if (!process.env.GEMINI_KEY) {
+        return res.status(500).json({ response: "Error: GEMINI_KEY is missing in .env" });
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const prompt = `You are Fasal Sathi, an expert in Indian agriculture. The user has ${soilType} soil, it is the ${season} season, and they are located in ${region}. Suggest the best crops they should plant right now, along with a short explanation. Respond briefly and clearly in ${lang}. Do not use text formatting and answer in plain text.`;
+
+        const result = await model.generateContent(prompt);
+        res.json({ response: result.response.text() });
+    } catch (err) {
+        console.error("Gemini Crop Suggest Error:", err);
+        res.status(500).json({ response: "Unable to generate suggestions. Please try again." });
+    }
+});
 app.get('/api/mandi', async (req, res) => {
     const { district } = req.query;
     const API_KEY = process.env.DATA_GOV_API_KEY;
