@@ -23,10 +23,16 @@
             <div class="input-group">
                 <label>Default District</label>
                 <select id="district" class="select-wrapper" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                    <option value="S.A.S Nagar">Mohali</option>
+                    <option value="Mohali">Mohali</option>
                     <option value="Amritsar">Amritsar</option>
                     <option value="Ludhiana">Ludhiana</option>
-                    <option value="Ferozepur">Ferozepur</option>
+                    <option value="Jalandhar">Jalandhar</option>
+                    <option value="Bathinda">Bathinda</option>
+                    <option value="Ferozpur">Ferozepur</option>
+                    <option value="Fazilka">Fazilka</option>
+                    <option value="Patiala">Patiala</option>
+                    <option value="Sangrur">Sangrur</option>
+                    <option value="Nawanshahr">Nawanshahr</option>
                 </select>
             </div>
             <div class="input-group">
@@ -39,26 +45,7 @@
     </div>
 
     <script>
-        document.getElementById('signupForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const res = await fetch('/api/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fullName: document.getElementById('fullName').value,
-                    phone: document.getElementById('phone').value,
-                    district: document.getElementById('district').value,
-                    password: document.getElementById('password').value
-                })
-            });
-            if (res.ok) {
-                alert("Registration Successful! Please Login.");
-                window.location.href = 'login.html';
-            } else {
-                const data = await res.json();
-                alert(data.error);
-            }
-        };
+        document.getElementById("signupForm").onsubmit=async e=>{e.preventDefault();const t=await fetch("/api/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName:document.getElementById("fullName").value,phone:document.getElementById("phone").value,district:document.getElementById("district").value,password:document.getElementById("password").value})});if(t.ok)alert("Registration Successful! Please Login."),window.location.href="login.html";else{const e=await t.json();alert(e.error||"Signup Failed")}};
     </script>
 </body>
 </html>
