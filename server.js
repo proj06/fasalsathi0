@@ -213,23 +213,22 @@ app.post('/api/crop-suggest', async (req, res) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const prompt = `You are Fasal Sathi, an expert in Indian agriculture. 
-
 The user has ${soilType} soil, it is the ${season} season, and they are located in ${region}. 
 
-Suggest the best crops they should plant right now. For each crop, provide the following information on separate lines:
-1. Crop Name
-2. Profitability Score (out of 10)
-3. Water Needs (Low/Medium/High)
-4. Seed/Resource Availability
+Suggest the best crops to plant. You must strictly follow the format in the example below. 
+Each attribute must be on the same line as its label. Do not put the score or need on a new line.
 
-Please respond clearly in ${lang}. 
+--- REQUIRED FORMAT ---
+Crop Name
+Profitability Score (out of 10): [Value]
+Water Needs: [Value]
+Seed/Resource Availability: [Value]
 
-Strict Formatting Rules:
-- Use only plain text.
-- Do not use any bolding (**), italics (*), or special Markdown characters.
-- Use double newlines between different crop recommendations.
-- Use a single newline between the different attributes of a single crop.
-- Ensure the response is organized and easy to read using only standard text and spacing.`;
+(Leave a double newline between different crops)
+--- END FORMAT ---
+
+Respond in ${lang}. Use plain text only. No bold, no italics.`;
+        
         const result = await model.generateContent(prompt);
         res.json({ response: result.response.text() });
     } catch (err) {
