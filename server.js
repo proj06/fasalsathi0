@@ -212,7 +212,7 @@ app.post('/api/crop-suggest', async (req, res) => {
 
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const prompt = `You are Fasal Sathi, an expert in Indian agriculture. The user has ${soilType} soil, it is the ${season} season, and they are located in ${region}. Suggest the best crops they should plant right now, along with a short explanation about profitability score, water needs, availability. Respond clearly in ${lang}. Use minimal text formatting without any bolds or italics and answer in plain text.`;
+        const prompt = `You are Fasal Sathi, an expert in Indian agriculture. The user has ${soilType} soil, it is the ${season} season, and they are located in ${region}. Suggest the best crops they should plant right now, along with a short explanation about profitability score, water needs, availability. Respond clearly in ${lang}. Use minimal text formatting without any bolds or italics and answer in plain text with newlines wherever needed.`;
 
         const result = await model.generateContent(prompt);
         res.json({ response: result.response.text() });
